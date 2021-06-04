@@ -21,48 +21,43 @@ class Compose(object):
 
         return img, bboxes
 
-class Resize(transforms.Resize):
+class Resize(torch.nn.Module):
     def __init__(self, size):
-        super().__init__(self, size)
+        super().__init__()
         self.size = size
 
-    def forward(self, img, bbox):
-        return super().forward(self, img), bbox
+    def forward(self, img, bboxes):
+        img = TF.resize(img, self.size)
+        img = TF.to_tensor(img)
+        return img, bboxes
 
 class RandomHorizontalFlip(torch.nn.Module):
-    def __init__(self, p, B):
+    def __init__(self, p):
         super().__init__()
         self.p = p
-        self.B = B
     
     def forward(self, img, bboxes):
         if random.random() <= self.p:
             img = TF.hflip(img)
-            rows, cols, labels = bboxes.shape
-            B = self.B
-            C = labels - B*5
-            for row in range(rows):
-                for col in range(cols):
-                    for b in range(B):
-                        bboxes[col,row,C+b*5+1] = 1-bboxes[col,row,C+b*5+1]
+            for bbox in bboxes:
+                bbox[1] = 1 - bbox[1]
             
-            return img, bboxes
-
-
-class ColorJitter(transforms.ColorJitter):
-    def __init__(self, brightness, saturation):
-        super().__init__(
-            self, 
-            brightness=brightness, 
-            saturation=saturation
-        )
-    
-    def forward(img, bboxes):
-        img = super().forward(img)
         return img, bboxes
 
 
-class RestrictedRandomAffine(torch.nn.Module):
+class ColorJitter(torch.nn.Module):
+    def __init__(self, brightness, saturation):
+        super().__init__()
+        self.transform = transforms.ColorJitter(
+            brightness=brightness,
+            saturation=saturation
+        )
+    
+    def forward(self, img, bboxes):
+        return self.transform(img), bboxes
+
+
+class RandomAffine(torch.nn.Module):
     def __init__(self, translate=None, scale=None):
         super().__init__()
         self.translate = translate
@@ -76,6 +71,7 @@ class RestrictedRandomAffine(torch.nn.Module):
             tx = int(round(torch.empty(1).uniform_(-max_dx, max_dx).item()))
             ty = int(round(torch.empty(1).uniform_(-max_dy, max_dy).item()))
             translations = (tx, ty)
+
         else:
             translations = (0,0)
         if self.scale is not None:
@@ -83,4 +79,53 @@ class RestrictedRandomAffine(torch.nn.Module):
         else:
             scale = 1.0
         
-        return TF.affine(img, translate=translations, scale=scale)
+        img = TF.affine(
+            img, 
+            translate=translations, 
+            scale=scale,
+            angle=0,
+            shear=0
+        )
+
+        for b, box in enumerate(bboxes):
+            x = bboxes[b,1]
+            y = bboxes[b,2]
+            x_prime = x - 0.5
+            y_prime = y - 0.5
+            
+            x_prime = scale*x_prime + translations[0]/img_size[0]
+            y_prime = scale*y_prime + translations[1]/img_size[1]
+
+            bboxes[b,1] = x_prime + 0.5
+            bboxes[b,2] = y_prime + 0.5
+
+        # bbox_list = []
+        # for col in range(7):
+        #     for row in range(7):
+        #         if bboxes[col, row, 20] != 0:
+        #             bboxes[col, row, 21] += col
+        #             bboxes[col, row, 22] += row
+        #             bbox_list = [bbox_list, bboxes[col,row,:]]
+
+        # bboxes = torch.zeros_like(bboxes)
+        # for bbox in bbox_list:
+        #     bbox[21] = scale[0]*bbox[21]+tx
+        #     bbox[22] = scale[1]*bbox[22]+ty
+        #     col = floor(bbox[21])
+        #     row = floor(bbox[22])
+        #     bbox[21] += -col
+        #     bbox[22] += -row
+        #     bboxes[col, row, :] = bbox
+        
+        return img, bboxes
+
+class ToTensor(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.transform = transforms.ToTensor()
+    
+    def forward(self, img, bboxes):
+        if isinstance(img, torch.Tensor):
+            return img, bboxes
+        else:
+            return self.transform(img), bboxes

@@ -46,11 +46,15 @@ class VOCDataset(torch.utils.data.Dataset):
         # Convert To Cells
         label_matrix = torch.zeros((self.S, self.S, self.C + 5 * self.B))
         for box in boxes:
+            
             class_label, x, y, width, height = box.tolist()
             class_label = int(class_label)
 
             # i,j represents the cell row and cell column
             i, j = int(self.S * y), int(self.S * x)
+            if i<0 or i>=7 or j<0 or j>=7:
+                continue
+
             x_cell, y_cell = self.S * x - j, self.S * y - i
 
             """

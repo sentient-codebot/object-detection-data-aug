@@ -4,10 +4,11 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from dataset import VOCDataset
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 import datatrans
 
-torch.manual_seed(47)
+torch.manual_seed(201216)
 
 IMG_DIR = "data/images"
 LABEL_DIR = "data/labels"
@@ -35,19 +36,34 @@ class Compose(object): # have to self-define a compose to deal with both bboxes 
 
         return img, bboxes
 
+# transform = Compose([
+#     transforms.Resize((448, 448)), 
+#     #RandomHueAdjust(0.25),
+#     transforms.RandomHorizontalFlip(p=0.5),
+#     transforms.ColorJitter(
+#         brightness=0.5,
+#         saturation=0.5),
+#     transforms.RandomAffine(
+#         degrees=0,
+#         #translate=(0.2,0.2),
+#         scale=(0.8,1.2)),
+#     transforms.ToTensor(),
+# ])
+
 transform = Compose([
-    transforms.Resize((448, 448)), 
-    #RandomHueAdjust(0.25),
-    transforms.RandomHorizontalFlip(p=0.5),
-    transforms.ColorJitter(
+    datatrans.Resize((448,448)),
+    datatrans.RandomAffine(
+        translate=(0.2,0.2),
+        scale=(0.8,1.2)
+    ),
+    datatrans.RandomHorizontalFlip(p=0.5),
+    datatrans.ColorJitter(
         brightness=0.5,
-        saturation=0.5),
-    transforms.RandomAffine(
-        degrees=0,
-        #translate=(0.2,0.2),
-        scale=(0.8,1.2)),
-    transforms.ToTensor(),
+        saturation=0.5
+    ),
+    datatrans.ToTensor()
 ])
+# transform = Compose([datatrans.ToTensor()])
 
 
 #%%
@@ -71,23 +87,53 @@ def main():
     print(f"x = {x.shape}, y = {y.shape}")
 
     n = 4  # how many images we will display
-    plt.figure(figsize=(16, 3))
-    for i in range(n):
-        # display original
-        ax = plt.subplot(1, n, i + 1)
-        plt.imshow(x[i+10].permute(1,2,0))
-        plt.gray()
-        ax.set_xticks([])
-        ax.set_yticks([])
+    if n > 1:
+        plt.figure(figsize=(16, 3))
+        for i in range(n):
+            target_idx = i+5 # changeable, depending on which images are to be shown
 
-        # display bounding boxes
-        #ax = plt.subplot(2, n, i + 1 + n)
-        
-        #plt.gray()
-        #ax.set_xticks([])
-        #ax.set_yticks([])
-        #ax.set_xlabel(labels_name[i])
-    plt.show()
+            ax = plt.subplot(1, n, i + 1)
+            ax.imshow(x[target_idx].permute(1,2,0))
+            for row in range(7):
+                for col in range(7):
+                    cell_label = y[target_idx, row, col, 20:]
+                    if cell_label[0] >= 0.5:
+                        center = (
+                            x[target_idx].shape[1]/7*(col+cell_label[1]).item(),
+                            x[target_idx].shape[2]/7*(row+cell_label[2]).item()
+                        )
+                        w = x[target_idx].shape[1]/7*cell_label[3].item()
+                        h = x[target_idx].shape[2]/7*cell_label[4].item()
+                        bottom_left = (
+                            round(center[0]-w/2),
+                            round(center[1]-h/2)
+                        )
+                        rect = patches.Rectangle(bottom_left, w, h, linewidth=1, edgecolor='r', facecolor='none')
+                        ax.add_patch(rect)
+                    
+                    if cell_label[5] >= 0.5:
+                        center = (
+                            x[target_idx].shape[1]/7*(row+cell_label[6]).item(),
+                            x[target_idx].shape[2]/7*(7-col-cell_label[7]).item()
+                        )
+                        w = x[target_idx].shape[1]/7*cell_label[8].item()
+                        h = x[target_idx].shape[2]/7*cell_label[9].item()
+                        bottom_left = (
+                            round(center[0]-w/2),
+                            round(center[1]-h/2)
+                        )
+                        rect = patches.Rectangle(bottom_left, w, h, linewidth=1, edgecolor='r', facecolor='none')
+                        ax.add_patch(rect)
+
+            plt.gray()
+            ax.set_xticks([])
+            ax.set_yticks([])
+
+        plt.show()
+    elif n > 0:
+        plt.figure(figsize=(4, 4))
+        plt.imshow(x.permute(1,2,0))
+        plt.show()
 
 
 if __name__ == "__main__":
