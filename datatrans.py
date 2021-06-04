@@ -83,3 +83,4 @@ class RestrictedRandomAffine(torch.nn.Module):
         else:
             scale = 1.0
         
+        return TF.affine(img, translate=translations, scale=scale)
