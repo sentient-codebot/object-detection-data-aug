@@ -63,7 +63,10 @@ transform = Compose([
     ),
     datatrans.ToTensor()
 ])
-# transform = Compose([datatrans.ToTensor()])
+transform_plain = Compose([
+    datatrans.Resize((448,448)),
+    datatrans.ToTensor()
+])
 
 
 #%%

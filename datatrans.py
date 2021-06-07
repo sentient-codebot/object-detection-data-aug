@@ -98,6 +98,8 @@ class RandomAffine(torch.nn.Module):
 
             bboxes[b,1] = x_prime + 0.5
             bboxes[b,2] = y_prime + 0.5
+            bboxes[b,3] = bboxes[b,3]*scale
+            bboxes[b,4] = bboxes[b,4]*scale
 
         # bbox_list = []
         # for col in range(7):
