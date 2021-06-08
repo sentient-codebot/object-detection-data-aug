@@ -87,19 +87,6 @@ def main():
     #   predicted_class, best_confidence, converted_boxes 
     #   0,              1,              2:
 
-    print(f"x = {len(x)}, y = {len(true_bboxes)}")
-
-    # sample_idx = 0 # choose one sample out of one batch
-    # sample_bboxes = []
-    # sample_labels = []
-
-    # for box in true_bboxes:
-    #     if box[0] == sample_idx:
-    #         sample_bboxes.append(box[1:])
-    #         sample_labels.append(box[0:2])
-        
-
-    #utils.plot_image(x[sample_idx].permute((1,2,0)),sample_bboxes)
     utils.plot_image(
         x,
         boxes_pred=None,
