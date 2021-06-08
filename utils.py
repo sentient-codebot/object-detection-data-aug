@@ -222,7 +222,8 @@ def plot_image(image, boxes_pred=None, boxes_true=None, nimgs=1):
         if boxes_pred is not None:
             _boxes_pred = boxes_pred[idx_img]
             for box in _boxes_pred:
-                box = box[3:] # 0:6
+                box_label = box[0:2] # class, confidence
+                box = box[2:] # 0:5
                 assert len(box) == 4, "Got more values than in x, y, w, h, in a box!"
                 upper_left_x = box[0] - box[2] / 2
                 upper_left_y = box[1] - box[3] / 2
@@ -236,10 +237,18 @@ def plot_image(image, boxes_pred=None, boxes_true=None, nimgs=1):
                 )
                 # Add the patch to the Axes
                 ax.add_patch(rect)
+                props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+                ax.text(
+                    x=upper_left_x * width,
+                    y=(upper_left_y)*height,
+                    s=LABEL_DICT[box_label[0]]+f":{box_label[1]}",
+                    bbox=props
+                )
         
         if boxes_true is not None:
             _boxes_true = boxes_true[idx_img]
             for box in _boxes_true:
+                box_label = box[0:2] # class, confidence
                 box = box[2:]
                 assert len(box) == 4, "Got more values than in x, y, w, h, in a box!"
                 upper_left_x = box[0] - box[2] / 2
@@ -254,6 +263,13 @@ def plot_image(image, boxes_pred=None, boxes_true=None, nimgs=1):
                 )
                 # Add the patch to the Axes
                 ax.add_patch(rect)
+                props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+                ax.text(
+                    x=upper_left_x * width,
+                    y=(upper_left_y)*height,
+                    s=LABEL_DICT[box_label[0]]+f":{box_label[1]}",
+                    bbox=props
+                )
 
     plt.show()
 
@@ -454,7 +470,51 @@ def plot_batch_imgs(
     nimgs = num_plot if num_plot<=batch_size else batch_size
 
 
-    
+# LABEL_DICT = {
+#     1: "aeroplane",
+#     2: "bicycle",
+#     3: "bird",
+#     4: "boat",
+#     5: "bottle",
+#     6: "bus",
+#     7: "car",
+#     8: "cat",
+#     9: "chair",
+#     10: "cow",
+#     11: "dog",
+#     12: "horse",
+#     13: "motorbike",
+#     14: "person",
+#     15: "sheep",
+#     16: "sofa",
+#     17: "table",
+#     18: "potted plant",
+#     19: "train",
+#     20: "tv/monitor"
+# }
+
+LABEL_DICT = {
+    0: "aeroplane",
+    1: "bicycle",
+    2: "bird",
+    3: "boat",
+    4: "bottle",
+    5: "bus",
+    6: "car",
+    7: "cat",
+    8: "chair",
+    9: "cow",
+    10: "dining table",
+    11: "dog",
+    12: "horse",
+    13: "motorbike",
+    14: "person",
+    15: "potted plant",
+    16: "sheep",
+    17: "sofa",
+    18: "train",
+    19: "tv/monitor"
+}
 
 
 
