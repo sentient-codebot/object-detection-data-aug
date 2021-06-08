@@ -200,35 +200,60 @@ def mean_average_precision(
     return sum(average_precisions) / len(average_precisions)
 
 
-def plot_image(image, boxes):
+def plot_image(image, boxes_pred=None, boxes_true=None, nimgs=1):
     """Plots predicted bounding boxes on the image"""
-    im = np.array(image)
-    height, width, _ = im.shape
+    """now image and boxes need to be list, first degree = number of image"""
+    """each item of image/bboxes list: returned from get_batch_bboxes"""
 
-    # Create figure and axes
-    fig, ax = plt.subplots(1)
-    # Display the image
-    ax.imshow(im)
+    assert image is not list, "image should be a list of length equal to batch_size"
 
-    # box[0] is x midpoint, box[2] is width
-    # box[1] is y midpoint, box[3] is height
+    fig = plt.figure() 
+    for idx_img in range(nimgs):
+        ax = fig.add_subplot(1,nimgs,idx_img+1)
+        im = np.array(image[idx_img]).transpose((1,2,0))
+        height, width, _ = im.shape
+        # Display the image
+        ax.imshow(im)
 
-    # Create a Rectangle potch
-    for box in boxes:
-        box = box[2:]
-        assert len(box) == 4, "Got more values than in x, y, w, h, in a box!"
-        upper_left_x = box[0] - box[2] / 2
-        upper_left_y = box[1] - box[3] / 2
-        rect = patches.Rectangle(
-            (upper_left_x * width, upper_left_y * height),
-            box[2] * width,
-            box[3] * height,
-            linewidth=1,
-            edgecolor="r",
-            facecolor="none",
-        )
-        # Add the patch to the Axes
-        ax.add_patch(rect)
+        # box[0] is x midpoint, box[2] is width
+        # box[1] is y midpoint, box[3] is height
+
+        # Create a Rectangle potch
+        if boxes_pred is not None:
+            _boxes_pred = boxes_pred[idx_img]
+            for box in _boxes_pred:
+                box = box[3:] # 0:6
+                assert len(box) == 4, "Got more values than in x, y, w, h, in a box!"
+                upper_left_x = box[0] - box[2] / 2
+                upper_left_y = box[1] - box[3] / 2
+                rect = patches.Rectangle(
+                    (upper_left_x * width, upper_left_y * height),
+                    box[2] * width,
+                    box[3] * height,
+                    linewidth=1,
+                    edgecolor="r",
+                    facecolor="none",
+                )
+                # Add the patch to the Axes
+                ax.add_patch(rect)
+        
+        if boxes_true is not None:
+            _boxes_true = boxes_true[idx_img]
+            for box in _boxes_true:
+                box = box[2:]
+                assert len(box) == 4, "Got more values than in x, y, w, h, in a box!"
+                upper_left_x = box[0] - box[2] / 2
+                upper_left_y = box[1] - box[3] / 2
+                rect = patches.Rectangle(
+                    (upper_left_x * width, upper_left_y * height),
+                    box[2] * width,
+                    box[3] * height,
+                    linewidth=1,
+                    edgecolor="g",
+                    facecolor="none",
+                )
+                # Add the patch to the Axes
+                ax.add_patch(rect)
 
     plt.show()
 
@@ -293,10 +318,8 @@ def get_batch_bboxes(
     pred_format="cells",
     box_format="midpoint",
     device="cuda",
-    seed=201216,
     pred=True
 ):
-    torch.manual_seed(201216)
     all_pred_boxes = []
     all_true_boxes = []
 
@@ -319,7 +342,10 @@ def get_batch_bboxes(
     if pred:
         bboxes = cellboxes_to_boxes(predictions)
 
+    all_img_list = []
     for idx in range(batch_size):
+        sample_pred_boxes = []
+        sample_true_boxes = []
         if pred:
             nms_boxes = non_max_suppression(
                 bboxes[idx],
@@ -328,24 +354,22 @@ def get_batch_bboxes(
                 box_format=box_format,
             )
 
-
-        #if batch_idx == 0 and idx == 0:
-        #    plot_image(x[idx].permute(1,2,0).to("cpu"), nms_boxes)
-        #    print(nms_boxes)
-
             for nms_box in nms_boxes:
-                all_pred_boxes.append([train_idx] + nms_box)
+                sample_pred_boxes.append(nms_box)
 
         for box in true_bboxes[idx]:
             # many will get converted to 0 pred
             if box[1] > threshold:
-                all_true_boxes.append([train_idx] + box)
+                sample_true_boxes.append(box)
 
-        train_idx += 1
+        all_pred_boxes.append(sample_pred_boxes)
+        all_true_boxes.append(sample_true_boxes)
+        all_img_list.append(x[idx])
+    
     if pred:
         model.train()
     
-    return all_pred_boxes, all_true_boxes, x
+    return all_pred_boxes, all_true_boxes, all_img_list
 
 def convert_cellboxes(predictions, S=7):
     """
@@ -407,3 +431,32 @@ def load_checkpoint(checkpoint, model, optimizer):
     print("=> Loading checkpoint")
     model.load_state_dict(checkpoint["state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer"])
+
+
+def plot_batch_imgs(
+    loader,
+    iou_threshold=0.5,
+    threshold=0.4,
+    device="cpu",
+    pred=False,
+    num_plot=1
+):
+    assert True, "unfinished, deprecated"
+    (pred_bboxes,true_bboxes,x) = get_batch_bboxes(
+        loader=loader,
+        iou_threshold=iou_threshold,
+        threshold=threshold,
+        device=device,
+        pred=pred
+    )
+
+    batch_size = len(x)
+    nimgs = num_plot if num_plot<=batch_size else batch_size
+
+
+    
+
+
+
+
+

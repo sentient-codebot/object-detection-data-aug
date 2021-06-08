@@ -9,7 +9,7 @@ import matplotlib.patches as patches
 import datatrans
 import utils
 
-torch.manual_seed(201216)
+torch.manual_seed(2016)
 
 IMG_DIR = "data/images"
 LABEL_DIR = "data/labels"
@@ -84,22 +84,28 @@ def main():
     )
     #true_bboxes specified as
     #   batch -> idx_box -> 
-    #   sample_idx, predicted_class, best_confidence, converted_boxes 
-    #   0,              1,              2,              3:
+    #   predicted_class, best_confidence, converted_boxes 
+    #   0,              1,              2:
 
-    print(f"x = {x.shape}, y = {len(true_bboxes)}")
+    print(f"x = {len(x)}, y = {len(true_bboxes)}")
 
-    sample_idx = 0 # choose one sample out of one batch
-    sample_bboxes = []
-    sample_labels = []
+    # sample_idx = 0 # choose one sample out of one batch
+    # sample_bboxes = []
+    # sample_labels = []
 
-    for box in true_bboxes:
-        if box[0] == sample_idx:
-            sample_bboxes.append(box[1:])
-            sample_labels.append(box[0:2])
+    # for box in true_bboxes:
+    #     if box[0] == sample_idx:
+    #         sample_bboxes.append(box[1:])
+    #         sample_labels.append(box[0:2])
         
 
-    utils.plot_image(x[sample_idx].permute((1,2,0)),sample_bboxes)
+    #utils.plot_image(x[sample_idx].permute((1,2,0)),sample_bboxes)
+    utils.plot_image(
+        x,
+        boxes_pred=None,
+        boxes_true=true_bboxes,
+        nimgs=3
+    )
     
 
 if __name__ == "__main__":
