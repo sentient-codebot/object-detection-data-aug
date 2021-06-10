@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from collections import Counter
+import time
 
 def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):
     """
@@ -348,7 +349,7 @@ def get_batch_bboxes(
     batch_idx, (x, labels) = next(enumerate(loader))
     x = x.to(device)
     labels = labels.to(device)
-    
+    start_time = time.time()
     if pred:
         with torch.no_grad():
             predictions = model(x)
@@ -382,9 +383,11 @@ def get_batch_bboxes(
         all_true_boxes.append(sample_true_boxes)
         all_img_list.append(x[idx])
     
+    end_time = time.time()
     if pred:
         model.train()
     
+    print(f"Inference FPS: {(start_time-end_time)/batch_size}")
     return all_pred_boxes, all_true_boxes, all_img_list
 
 def convert_cellboxes(predictions, S=7):
