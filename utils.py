@@ -387,7 +387,7 @@ def get_batch_bboxes(
     if pred:
         model.train()
     
-    print(f"Inference FPS: {(start_time-end_time)/batch_size}")
+    print(f"Inference FPS: {batch_size/(end_time-start_time)}")
     return all_pred_boxes, all_true_boxes, all_img_list
 
 def convert_cellboxes(predictions, S=7):
