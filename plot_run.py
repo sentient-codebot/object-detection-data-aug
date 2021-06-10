@@ -9,7 +9,7 @@ import matplotlib.patches as patches
 import datatrans
 import utils
 
-torch.manual_seed(2016)
+torch.manual_seed(201611)
 
 IMG_DIR = "data/images"
 LABEL_DIR = "data/labels"
@@ -62,7 +62,7 @@ transform_plain = Compose([
 def main():
     train_dataset = VOCDataset(
         "data/100examples.csv",
-        transform=transform,
+        transform=transform_plain,
         img_dir=IMG_DIR,
         label_dir=LABEL_DIR,
     )
@@ -90,7 +90,7 @@ def main():
 
     utils.plot_image(
         x,
-        boxes_pred=None,
+        boxes_pred=true_bboxes,
         boxes_true=true_bboxes,
         figsize=None,
         nimgs=6

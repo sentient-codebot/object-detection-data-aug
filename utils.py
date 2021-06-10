@@ -222,33 +222,6 @@ def plot_image(image, boxes_pred=None, boxes_true=None, figsize=None, nimgs=1):
         # box[0] is x midpoint, box[2] is width
         # box[1] is y midpoint, box[3] is height
 
-        # Create a Rectangle potch
-        if boxes_pred is not None:
-            _boxes_pred = boxes_pred[idx_img]
-            for box in _boxes_pred:
-                box_label = box[0:2] # class, confidence
-                box = box[2:] # 0:5
-                assert len(box) == 4, "Got more values than in x, y, w, h, in a box!"
-                upper_left_x = box[0] - box[2] / 2
-                upper_left_y = box[1] - box[3] / 2
-                rect = patches.Rectangle(
-                    (upper_left_x * width, upper_left_y * height),
-                    box[2] * width,
-                    box[3] * height,
-                    linewidth=1,
-                    edgecolor="r",
-                    facecolor="none",
-                )
-                # Add the patch to the Axes
-                ax.add_patch(rect)
-                props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-                ax.text(
-                    x=upper_left_x * width,
-                    y=(upper_left_y)*height,
-                    s=LABEL_DICT[box_label[0]]+f":{box_label[1]}",
-                    bbox=props
-                )
-        
         if boxes_true is not None:
             _boxes_true = boxes_true[idx_img]
             for box in _boxes_true:
@@ -267,14 +240,44 @@ def plot_image(image, boxes_pred=None, boxes_true=None, figsize=None, nimgs=1):
                 )
                 # Add the patch to the Axes
                 ax.add_patch(rect)
-                props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+                props = dict(boxstyle='square', facecolor='white', color='green', alpha=1)
                 ax.text(
-                    x=upper_left_x * width,
-                    y=(upper_left_y)*height,
-                    s=LABEL_DICT[box_label[0]]+f":{box_label[1]}",
-                    bbox=props
+                    x=(upper_left_x+0.0175)*width,
+                    y=(upper_left_y-0.025)*height,
+                    s=LABEL_DICT[box_label[0]],
+                    bbox=props,
+                    color='w'
                 )
 
+
+        if boxes_pred is not None:
+            _boxes_pred = boxes_pred[idx_img]
+            for box in _boxes_pred:
+                box_label = box[0:2] # class, confidence
+                box = box[2:] # 0:5
+                assert len(box) == 4, "Got more values than in x, y, w, h, in a box!"
+                upper_left_x = box[0] - box[2] / 2
+                upper_left_y = box[1] - box[3] / 2
+                rect = patches.Rectangle(
+                    (upper_left_x * width, upper_left_y * height),
+                    box[2] * width,
+                    box[3] * height,
+                    linewidth=1,
+                    edgecolor="r",
+                    facecolor="none",
+                )
+                # Add the patch to the Axes
+                ax.add_patch(rect)
+                props = dict(boxstyle='square', facecolor='red', alpha=1)
+                ax.text(
+                    x=(upper_left_x+0.0175)*width,
+                    y=(upper_left_y-0.025)*height,
+                    s=LABEL_DICT[box_label[0]]+f":{box_label[1]}",
+                    bbox=props,
+                    color='w'
+                )
+        
+        
     plt.show()
 
 def get_bboxes(
@@ -389,8 +392,8 @@ def get_batch_bboxes(
     end_time = time.time()
     if pred:
         model.train()
+        print(f"Inference FPS: {batch_size/(end_time-start_time)}")
     
-    print(f"Inference FPS: {batch_size/(end_time-start_time)}")
     return all_pred_boxes, all_true_boxes, all_img_list
 
 def convert_cellboxes(predictions, S=7):
