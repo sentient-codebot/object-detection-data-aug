@@ -77,6 +77,7 @@ def main():
 
     (pred_bboxes,true_bboxes,x) = utils.get_batch_bboxes(
         loader=train_loader,
+        model=None,
         iou_threshold=0.5,
         threshold=0.4,
         device="cpu",

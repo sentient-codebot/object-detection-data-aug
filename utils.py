@@ -210,7 +210,7 @@ def plot_image(image, boxes_pred=None, boxes_true=None, nimgs=1):
     fig = plt.figure() 
     for idx_img in range(nimgs):
         ax = fig.add_subplot(1,nimgs,idx_img+1)
-        im = np.array(image[idx_img]).transpose((1,2,0))
+        im = np.array(image[idx_img].cpu()).transpose((1,2,0))
         height, width, _ = im.shape
         # Display the image
         ax.imshow(im)
