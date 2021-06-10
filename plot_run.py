@@ -90,7 +90,7 @@ def main():
 
     utils.plot_image(
         x,
-        boxes_pred=true_bboxes,
+        boxes_pred=None,
         boxes_true=true_bboxes,
         figsize=None,
         nimgs=6

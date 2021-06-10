@@ -243,7 +243,7 @@ def plot_image(image, boxes_pred=None, boxes_true=None, figsize=None, nimgs=1):
                 props = dict(boxstyle='square', facecolor='white', color='green', alpha=1)
                 ax.text(
                     x=(upper_left_x+0.0175)*width,
-                    y=(upper_left_y-0.025)*height,
+                    y=(upper_left_y-0.03)*height,
                     s=LABEL_DICT[box_label[0]],
                     bbox=props,
                     color='w'
@@ -263,18 +263,18 @@ def plot_image(image, boxes_pred=None, boxes_true=None, figsize=None, nimgs=1):
                     box[2] * width,
                     box[3] * height,
                     linewidth=1,
-                    edgecolor="r",
+                    edgecolor="crimson",
                     facecolor="none",
                 )
                 # Add the patch to the Axes
                 ax.add_patch(rect)
-                props = dict(boxstyle='square', facecolor='red', alpha=1)
+                props = dict(boxstyle='square', facecolor='crimson', alpha=1)
                 ax.text(
                     x=(upper_left_x+0.0175)*width,
-                    y=(upper_left_y-0.025)*height,
-                    s=LABEL_DICT[box_label[0]]+f":{box_label[1]}",
+                    y=(upper_left_y-0.03)*height,
+                    s=LABEL_DICT[box_label[0]]+f":{box_label[1]:.2f}",
                     bbox=props,
-                    color='w'
+                    color='white'
                 )
         
         
