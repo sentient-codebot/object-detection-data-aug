@@ -92,7 +92,8 @@ def main():
         x,
         boxes_pred=None,
         boxes_true=true_bboxes,
-        nimgs=3
+        figsize=None,
+        nimgs=6
     )
     
 

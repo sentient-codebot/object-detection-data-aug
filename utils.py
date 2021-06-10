@@ -201,14 +201,17 @@ def mean_average_precision(
     return sum(average_precisions) / len(average_precisions)
 
 
-def plot_image(image, boxes_pred=None, boxes_true=None, nimgs=1):
+def plot_image(image, boxes_pred=None, boxes_true=None, figsize=None, nimgs=1):
     """Plots predicted bounding boxes on the image"""
     """now image and boxes need to be list, first degree = number of image"""
     """each item of image/bboxes list: returned from get_batch_bboxes"""
 
     assert image is not list, "image should be a list of length equal to batch_size"
 
-    fig = plt.figure() 
+    if figsize is None:
+        figsize=(5*nimgs,5)
+
+    fig = plt.figure(figsize=figsize) 
     for idx_img in range(nimgs):
         ax = fig.add_subplot(1,nimgs,idx_img+1)
         im = np.array(image[idx_img].cpu()).transpose((1,2,0))
